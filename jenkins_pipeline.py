@@ -18,6 +18,7 @@ Todo:
 import time
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from pyvirtualdisplay import Display
 from PIL import Image
 
 QA_NAME = 'SMPP'
@@ -67,4 +68,6 @@ def main():
 	browser.close()
 
 if __name__ == '__main__':
+	display = Display(visible=0, size=(800, 600))
+	display.start()
 	main()
