@@ -6,7 +6,7 @@ Script to download the pipeline PNG from Jenkins Blue Ocean latest Branch<br>
 sudo apt-get install chromium-chromedriver
 sudo pip install Pillow
 sudo pip install selenium
-sudo pip install pyvirtualdisplay
+sudo pip install PyVirtualDisplay
 ```
 # TODO<br>
 <br>
