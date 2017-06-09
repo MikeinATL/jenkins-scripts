@@ -17,12 +17,12 @@ Todo:
 
 import time
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
 from pyvirtualdisplay import Display
 from PIL import Image
 
 QA_NAME = 'SMPP'
 QA_BUILD = 'master'
+JENKINSURL = 'http://localhost:8080'
 JENKINSUSER = 'jenkins'
 JENKINSPASSWORD = 'jenkins'
 DELAY = 3
@@ -30,10 +30,8 @@ DELAY = 3
 def main():
 	""" Main Function"""
 	chromedriver = '/usr/lib/chromium-browser/chromedriver'
-	chrome_options = Options()
-	chrome_options.add_argument("--headless")
 	browser = webdriver.Chrome(chromedriver)
-	browser.get('http://localhost:8080')
+	browser.get(JENKINSURL)
 	browser.find_element_by_id("j_username").send_keys(JENKINSUSER)
 	browser.find_element_by_name("j_password").send_keys(JENKINSPASSWORD)
 
