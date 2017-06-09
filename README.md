@@ -1,5 +1,5 @@
 # Title<br>
-Script to download the pipeline PNG from Jenkins Blue Ocean Branch<br>
+Script to download the pipeline PNG from Jenkins Blue Ocean latest Branch<br>
 <br>
 # Dependencies<br>
 pip install Pillow<br>
