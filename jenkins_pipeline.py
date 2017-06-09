@@ -1,6 +1,17 @@
 #!/usr/bin/python3
 """
-Text here
+This module executes against Jenkins to get the pipeline PNG under Blue Ocean.
+The script is created because of the lack of plugins/methods to get the PNG images
+
+Example:
+
+	$ chmod 775 jenkins_pipeline.py
+        $ ./jenkins_pipeline.py
+
+Todo:
+    * Change Jenkins user/password
+    * Change QA_Name to put the project to monitor
+    * Change branch to monitor (QA_BUILD)
 
 """
 
