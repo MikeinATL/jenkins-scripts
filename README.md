@@ -8,6 +8,5 @@ sudo pip install Pillow
 sudo pip install selenium
 sudo pip install pyvirtualdisplay
 ```
-<br>
 # TODO<br>
 <br>
