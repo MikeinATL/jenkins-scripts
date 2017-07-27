@@ -1,5 +1,6 @@
 # Title
-Jenkins script I use in my projects and spend some time researching.</br>
+Jenkins scripts I use in my projects and spend some time researching.</br>
+I think it will be nice to put it here since it took me sometime to find solutions.</br>
 </br>
 # Dependencies (jenkins_pipeline.py)<br>
 OS: Ubuntu 16.04 Xenial</br>
