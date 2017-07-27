@@ -1,0 +1,249 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
+  <html>
+    <head>
+      <title>${project.name}</title>
+      <style>
+        body table, td, th, p, h1, h2 {
+        margin:0;
+        font:normal normal
+        100% Georgia, Serif;
+        background-color: #ffffff;
+        }
+        h1, h2 {
+        border-bottom:dotted 1px #999999;
+        padding:5px;
+        margin-top:10px;
+        margin-bottom:10px;
+        color: #000000;
+        font: normal bold 130%
+        Georgia,Serif;
+        background-color:#f0f0f0;
+        }
+        tr.gray {
+        background-color:#f0f0f0;
+        }
+        h2 {
+        padding:5px;
+        margin-top:5px;
+        margin-bottom:5px;
+        font: italic bold 110% Georgia,Serif;
+        }
+        .bg2 {
+        color:black;
+        background-color:#E0E0E0;
+        font-size:110%
+        }
+        th {
+        font-weight: bold;
+        }
+        tr, td, th {
+        padding:2px;
+        }
+        td.test_passed {
+        color:blue;
+        }
+        td.test_failed {
+        color:red;
+        }
+        td.center {
+          text-align: center;
+        }
+        td.test_skipped {
+        color:grey;
+        }
+        .console {
+        font: normal normal 90% Courier New,
+        monotype;
+        padding:0px;
+        margin:0px;
+        }
+        div.content, div.header {
+        background: #ffffff;
+        border: dotted
+        1px #666;
+        margin: 2px;
+        content:
+        2px;
+        padding: 2px;
+        }
+        table.border, th.border, td.border {
+        border:
+        1px solid black;
+        border-collapse:collapse;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <j:set var="spc" value="&amp;nbsp;&amp;nbsp;" />
+        <!-- GENERAL INFO -->
+        <table>
+          <tr class="gray">
+            <td align="right">
+              <j:choose>
+                <j:when test="${build.result=='SUCCESS'}">
+                  <img src="${rooturl}static/e59dfe28/images/32x32/green.gif" />
+                </j:when>
+                <j:when test="${build.result=='FAILURE'}">
+                  <img src="${rooturl}static/e59dfe28/images/32x32/red.gif" />
+                </j:when>
+                <j:otherwise>
+                  <img
+                    src="${rooturl}static/e59dfe28/images/32x32/yellow.gif" />
+                </j:otherwise>
+              </j:choose>
+            </td>
+            <td valign="center">
+              <b style="font-size: 200%;">BUILD ${build.result}</b>
+            </td>
+          </tr>
+          <tr>
+            <td>Build URL</td>
+            <td>
+              <a href="${rooturl}${build.url}">${rooturl}${build.url}</a>
+            </td>
+          </tr>
+          <tr>
+            <td>Project:</td>
+            <td>${project.name}</td>
+          </tr>
+          <tr>
+            <td>JIRA Ticket:</td>
+               <td><j:set var="jiraTicket" value="${it.getAction('org.jenkinsci.plugins.workflow.cps.EnvActionImpl').getOverriddenEnvironment()}"/>${jiraTicket.get("jiraTicket")}</td>
+          </tr>
+          <tr>
+            <td>Date of build:</td>
+            <td>${it.timestampString}</td>
+          </tr>
+          <tr>
+            <td>Build duration:</td>
+            <td>${build.durationString}</td>
+          </tr>
+          <tr>
+            <td>Build cause:</td>
+            <td>
+              <j:forEach var="cause" items="${build.causes}">${cause.shortDescription}
+              </j:forEach>
+            </td>
+          </tr>
+          <tr>
+            <td>Build description:</td>
+            <td>${build.description}</td>
+          </tr>
+          <tr>
+            <td>Built on:</td>
+            <td>Slave_CentOS7</td>
+          </tr>
+          <tr>
+            <td>Total Builds:</td>
+            <td>${build.number}</td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- HEALTH TEMPLATE -->
+      <div class="content">
+        <j:set var="healthIconSize" value="16x16" />
+        <j:set var="healthReports" value="${project.buildHealthReports}" />
+        <j:if test="${healthReports!=null}">
+          <h1>Health Report</h1>
+          <table>
+            <tr>
+              <th>W</th>
+              <th>Description</th>
+              <th>Score</th>
+            </tr>
+            <j:forEach var="healthReport" items="${healthReports}">
+              <tr>
+                <td>
+                  <img
+                    src="${rooturl}${healthReport.getIconUrl(healthIconSize)}" />
+                </td>
+                <td>${healthReport.description}</td>
+                <td>${healthReport.score}</td>
+              </tr>
+            </j:forEach>
+          </table>
+          <br />
+        </j:if>
+      </div>
+
+      <!-- CHANGE SET -->
+      <div class="content">
+          <a href="${rooturl}${build.url}/changes">
+            <h1>Changes</h1>
+          </a>
+          <table>
+            <tr>
+             <td><j:set var="changeSet" value="${it.getAction('org.jenkinsci.plugins.workflow.cps.EnvActionImpl').getOverriddenEnvironment()}"/>${changeSet.get("changeStringEnv")}</td>
+            </tr>
+          </table>
+       <br />
+      </div>
+
+      <!-- Static Analysis -->
+      <j:set var="actions" value="${it.staticAnalysisActions}" />
+      <j:if test="${!actions.isEmpty()}">
+        <div class="content">
+          <h1>Static Analysis Results</h1>
+          <table>
+            <tr>
+              <th></th>
+              <th>Name</th>
+              <th>Result</th>
+              <th>Total</th>
+              <th>High</th>
+              <th>Normal</th>
+              <th>Low</th>
+            </tr>
+            <j:forEach var="action" items="${actions}">
+              <tr>
+                <td>
+                  <img src="${rooturl}${action.smallImageName}" />
+                </td>
+                <td>
+                  <a href="${rooturl}${build.url}/${action.urlName}">${action.displayName}</a>
+                </td>
+                <td class="center">
+                  <j:choose>
+                    <j:when test="${action.result.pluginResult=='SUCCESS'}">
+                      <img src="${rooturl}static/e59dfe28/images/16x16/blue.gif" />
+                    </j:when>
+                    <j:when test="${action.result.pluginResult=='FAILURE'}">
+                      <img src="${rooturl}static/e59dfe28/images/16x16/red.gif" />
+                    </j:when>
+                    <j:otherwise>
+                      <img src="${rooturl}static/e59dfe28/images/16x16/yellow.gif" />
+                    </j:otherwise>
+                  </j:choose>
+                </td>
+                <td class="center">${action.result.numberOfAnnotations} </td>
+                <td class="center">${action.result.getNumberOfAnnotations('HIGH')} </td>
+                <td class="center">${action.result.getNumberOfAnnotations('NORMAL')} </td>
+                <td class="center">${action.result.getNumberOfAnnotations('LOW')} </td>
+              </tr>
+            </j:forEach>
+          </table>
+        </div>
+      </j:if>
+
+      <!-- CONSOLE OUTPUT -->
+      <div class="content">
+        <a href="${rooturl}${build.url}/console">
+          <h1>Console Output</h1>
+        </a>
+        <table class="console">
+          <j:forEach var="line" items="${build.getLog(50)}">
+            <tr>
+              <td>
+                <tt>${line}</tt>
+              </td>
+            </tr>
+          </j:forEach>
+        </table>
+        <br />
+      </div>
+
+    </body>
+  </html>
+</j:jelly>
