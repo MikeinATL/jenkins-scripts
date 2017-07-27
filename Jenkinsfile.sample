@@ -1,0 +1,110 @@
+properties([[$class: 'GitLabConnectionProperty', gitLabConnection: 'GitLab']])
+pipeline {
+    agent { label 'Slave_CentOS7' }
+    stages {
+         stage('JIRA') {
+	           agent none
+             steps {
+	               echo "Opening JIRA Ticket..."
+                 script {
+                    def issue = [fields: [ project: [key: 'DEVOPS'],
+                                 assignee: [name: 'devops'],
+                                 summary: "Jenkins Build ${env.JOB_NAME} #${env.BUILD_ID} Ticket",
+                                 description: "New JIRA Ticket created on ${env.BUILD_TIMESTAMP} from Jenkins. URL: ${env.JENKINS_URL}",
+                                 priority: [name: 'Medium'],
+                                 labels: ['Jenkins'],
+                                 issuetype: [name: 'Jenkins']]]
+
+                    def newIssue = jiraNewIssue issue: issue, site: 'JIRA-DEVOPS'
+
+                    env.jiraTicket = newIssue.data.key
+                    echo "JIRA Ticket #${env.jiraTicket}"
+                    }
+             }
+         }
+        stage('Build') {
+            steps {
+                checkout scm
+                echo 'Building..'
+		            script { jiraAddComment idOrKey: "${env.jiraTicket}", comment: 'Start Building the project ....', site: 'JIRA-DEVOPS' }
+                sh 'ls -lrt'
+            }
+        }
+        stage('Test') {
+            steps {
+                echo 'Testing..'
+		            script { jiraAddComment idOrKey: "${env.jiraTicket}", comment: 'Start Testing the project ....', site: 'JIRA-DEVOPS' }
+                sh 'ls -lrt'
+            }
+        }
+        stage('Deploy') {
+            steps {
+                echo 'Deploying....'
+		            script { jiraAddComment idOrKey: "${env.jiraTicket}", comment: 'Start Deploying the project ....', site: 'JIRA-DEVOPS' }
+                sh 'ls -lrt'
+            }
+        }
+        stage('CleanUp') {
+           steps {
+              deleteDir()
+           }
+        }
+    }
+    post {
+      always {
+            echo 'Always'
+      }
+      success {
+           script { currentBuild.result = 'SUCCESS' }
+           script { def changeStringReturn = getChangeString() 
+                    env.changeStringEnv = changeStringReturn }
+	   updateGitlabCommitStatus(name: 'build', state: 'success')
+           sendEmail("SUCCEEDED")
+         script {
+               // id 5->Resolved
+               def transitionInput = [ transition: [ id: '5' ], fields: [ resolution: [ name: 'Done' ] ] ]
+               jiraAddComment idOrKey: "${env.jiraTicket}", comment: 'Build Successful ....', site: 'JIRA-DEVOPS'
+               jiraTransitionIssue idOrKey: "${env.jiraTicket}", input: transitionInput, site: 'JIRA-DEVOPS'
+         }
+      }
+      failure {
+         script { currentBuild.result = 'FAILURE' }
+         updateGitlabCommitStatus(name: 'build', state: 'failed')
+         sendEmail("FAILED")
+      }
+    }
+}
+
+@NonCPS
+def getChangeString() {
+    def changeString =""
+
+    def changeLogSets = currentBuild.changeSets
+    for (int i = 0; i < changeLogSets.size(); i++) {
+        def entries = changeLogSets[i].items
+        for (int j = 0; j < entries.length; j++) {
+            def entry = entries[j]
+            changeString += "Commit: ${entry.commitId} by <b>${entry.author}</b> on ${new Date(entry.timestamp)} Build: ${entry.msg}<br/>"
+            def files = new ArrayList(entry.affectedFiles)
+            for (int k = 0; k < files.size(); k++) {
+                  def file = files[k]
+                  changeString += "  ${file.editType.name} ${file.path}"
+                  //echo "File(s) Modified: <b>${file.editType.name}</b> ${file.path}<br/>"
+            }
+        }
+    }
+
+    if (!changeString) {
+        changeString = "<td>No Changes<td>"
+    }
+    return changeString
+}
+
+def sendEmail(status) {
+         emailext(body: '${JELLY_SCRIPT,template="emailHtml"}',
+                     replyTo: 'group@email.com', subject: '[Jenkins] ${DEFAULT_SUBJECT}' + status + '!',
+                     to: 'cc:group@email.com',  mimeType: 'text/html',
+                     recipientProviders: [[$class: 'CulpritsRecipientProvider'],
+                                           [$class: 'RequesterRecipientProvider']])
+
+}
